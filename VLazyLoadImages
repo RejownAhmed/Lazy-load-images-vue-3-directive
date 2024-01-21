@@ -1,0 +1,44 @@
+export default {
+  mounted: (el) => {
+    const loader = document.createElement("div");
+    loader.classList.add("skeliton");
+    function loadImage() {
+      el.insertAdjacentElement("afterbegin", loader);
+      const imageElement = Array.from(el.children).find(
+        (el) => el.nodeName === "IMG"
+      );
+      if (imageElement) {
+        imageElement.classList.add("d-none");
+        imageElement.onload = () => {
+          loader.remove();
+          imageElement.classList.remove("d-none")
+        };
+        imageElement.addEventListener("error", () => console.log("error"));
+        imageElement.src = imageElement.dataset.url;
+      }
+    }
+
+    function handleIntersect(entries, observer) {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          loadImage();
+          observer.unobserve(el);
+        }
+      });
+    }
+
+    function createObserver() {
+      const options = {
+        root: null,
+        threshold: "0",
+      };
+      const observer = new IntersectionObserver(handleIntersect, options);
+      observer.observe(el);
+    }
+    if (window["IntersectionObserver"]) {
+      createObserver();
+    } else {
+      loadImage();
+    }
+  },
+};
